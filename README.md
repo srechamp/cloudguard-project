@@ -14,7 +14,7 @@ CloudGuard is a FastAPI microservice that gives application teams self-service c
 
 ## Tech stack
 
-| JD requirement | Where it lives here |
+| Requiremets | Where it lives here |
 |---|---|
 | Python, FastAPI, ASGI | `app/` (FastAPI + uvicorn) |
 | Secure REST APIs | API-key auth dependency, input validation via Pydantic, rate-limit-ready middleware |
