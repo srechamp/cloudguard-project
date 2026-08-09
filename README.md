@@ -44,9 +44,9 @@ docker build -t cloudguard:latest .
 kubectl apply -f k8s/
 ```
 
-## Interview talking points
+## The Architect Pitch
 
-- **Why this architecture**: stateless API behind APIM → horizontal scaling on AKS with HPA; secrets never in code or env-committed files (Key Vault via managed identity); DB access through SQLAlchemy so Azure SQL vs local SQLite is a config change, not a code change.
+- **Why this architecture**: stateless API behind APIM -> horizontal scaling on AKS with HPA; secrets never in code or env-committed files (Key Vault via managed identity); DB access through SQLAlchemy so Azure SQL vs local SQLite is a config change, not a code change.
 - **Security**: non-root container, read-only root FS, API-key dependency (swap for Azure AD/Entra JWT validation in prod via APIM policy), Pydantic validation rejects malformed input at the edge.
-- **How my OCI experience transfers**: landing zones ≈ Azure management groups + policy; OCI IAM federation ≈ Entra ID; OCI Alarms ≈ Azure Monitor alerts; tenancy provisioning ≈ subscription vending. Same control plane concepts, different names.
-- **GenAI**: LangChain chain with structured prompt + graceful degradation the pattern MetLife's JD hints at for platform intelligence.
+- **The OCI -> Azure transfer**: landing zones ≈ Azure management groups + policy; OCI IAM federation ≈ Entra ID; OCI Alarms ≈ Azure Monitor alerts; tenancy provisioning ≈ subscription vending. Same control plane concepts, different names.
+- **GenAI**: LangChain chain with structured prompt + graceful degradation the pattern for platform intelligence
