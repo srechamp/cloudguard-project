@@ -1,0 +1,65 @@
+# AKS deployment: probes, resource limits, non-root security context,
+# Workload Identity for Key Vault access (no secrets in manifests).
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudguard
+  labels: { app: cloudguard }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: cloudguard }
+  template:
+    metadata:
+      labels:
+        app: cloudguard
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: cloudguard-sa   # federated with an Entra ID managed identity
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: cloudguard
+          image: cloudguardacr.azurecr.io/cloudguard:latest
+          ports: [{ containerPort: 8000 }]
+          env:
+            - name: CLOUDGUARD_KEY_VAULT_URL
+              value: "https://cloudguard-kv.vault.azure.net"
+          readinessProbe:
+            httpGet: { path: /readyz, port: 8000 }
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: 8000 }
+            periodSeconds: 15
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: 500m, memory: 512Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudguard
+spec:
+  selector: { app: cloudguard }
+  ports: [{ port: 80, targetPort: 8000 }]
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cloudguard
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: cloudguard }
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }

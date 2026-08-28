@@ -1,0 +1,37 @@
+# Azure DevOps equivalent of the GitHub Actions workflow —
+# demonstrates the JD's preferred "Azure DevOps or similar tooling".
+trigger:
+  branches: { include: [main] }
+
+pool: { vmImage: ubuntu-latest }
+
+stages:
+  - stage: Test
+    jobs:
+      - job: pytest
+        steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: "3.12" }
+          - script: pip install -r requirements.txt && pytest -q
+            displayName: Run tests
+
+  - stage: BuildDeploy
+    dependsOn: Test
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: docker
+        steps:
+          - task: Docker@2
+            inputs:
+              containerRegistry: cloudguard-acr-svc   # service connection
+              repository: cloudguard
+              command: buildAndPush
+              tags: $(Build.SourceVersion)
+          - task: KubernetesManifest@1
+            inputs:
+              action: deploy
+              connectionType: azureResourceManager
+              azureResourceGroup: cloudguard-rg
+              kubernetesCluster: cloudguard-aks
+              manifests: k8s/deployment.yaml
+              containers: cloudguardacr.azurecr.io/cloudguard:$(Build.SourceVersion)

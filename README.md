@@ -1,7 +1,7 @@
 <h1 align="center">The Cloud Guard Project</h1>
 <h2 align='center'>A Cloud Self-Service & Governance Platform</h2>
 
-A working demo project built to emulate a cloud platform providing self-service capabilities and metrics to drive desired behaviors around financial operations, security posture, and overall good hygiene for cloud-based applications.
+A working project built to emulate a cloud platform providing self-service capabilities and metrics to drive desired behaviors around financial operations, security posture, and overall good hygiene for cloud-based applications.
 
 ## What it does
 
