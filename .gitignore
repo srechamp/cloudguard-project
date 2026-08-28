@@ -1,4 +1,4 @@
-# --- Secrets & credentials (DO NOT COMMIT) ---
+# Secrets & credentials (DO NOT COMMIT)
 .env
 .env.*
 !.env.example
@@ -11,8 +11,8 @@ local.settings.json
 kubeconfig
 *.kubeconfig
 .kube/
-
-# --- Terraform state ---   
+   
+# Terraform local artifacts (state is remote; these are local-only) 
 *.tfstate
 *.tfstate.*
 *.tfvars
@@ -21,11 +21,11 @@ kubeconfig
 .terraform.lock.hcl
 *.tfplan
 
-# --- Local database ---
+# Local database 
 *.db
 *.sqlite3
 
-# --- Python ---
+# Python
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -36,23 +36,18 @@ env/
 build/
 dist/
 
-# --- Test & coverage artifacts ---
+# Test & coverage artifacts 
 .pytest_cache/
 .coverage
 htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# --- IDE/OS ---
+# IDE/OS
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
 
-# --- Docker ---
+# Docker
 docker-compose.override.yml
-
-# --- Terraform local artifacts
-infra/**/.terraform/
-infra/**/.terraform.lock.hcl
-infra/**/terraform.tfvars

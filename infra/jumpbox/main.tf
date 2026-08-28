@@ -1,8 +1,7 @@
-# -----------------------------------------------------------------------------
-# The dependency chain Azure requires for a reachable VM:
-#   Resource Group -> VNet -> Subnet -> (Public IP + NSG) -> NIC -> VM
+# Azure requires a dependency chain for a reachable VM:
+# Resource Group -> VNet -> Subnet -> (Public IP + NSG) -> NIC -> VM
 # Terraform figures out this order automatically from the references between
-# resources; you don't declare order, you declare relationships.
+# resources; you don't declare order, you declare relationships
 # -----------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "main" {
@@ -10,7 +9,7 @@ resource "azurerm_resource_group" "main" {
   location = var.location
 }
 
-# The private network your resources live in.
+# The private network your resources live in
 resource "azurerm_virtual_network" "main" {
   name                = "cloudguard-vnet"
   address_space       = ["10.0.0.0/16"]
@@ -18,7 +17,7 @@ resource "azurerm_virtual_network" "main" {
   resource_group_name = azurerm_resource_group.main.name
 }
 
-# A slice of that network for the jump-box.
+# Network config for the jump-box
 resource "azurerm_subnet" "jumpbox" {
   name                 = "jumpbox-subnet"
   resource_group_name  = azurerm_resource_group.main.name
@@ -26,7 +25,7 @@ resource "azurerm_subnet" "jumpbox" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# A stable public IP so you can SSH in from your machine.
+# A stable public IP so you can SSH in from your machine
 resource "azurerm_public_ip" "jumpbox" {
   name                = "jumpbox-pip"
   location            = azurerm_resource_group.main.location
@@ -35,8 +34,8 @@ resource "azurerm_public_ip" "jumpbox" {
   sku                 = "Standard"
 }
 
-# Firewall: allow SSH (22) ONLY from your IP. Everything else is denied by
-# Azure's default rules. This single rule is your main attack-surface control.
+# Firewall: (Port 22) ONLY from your IP. Everything else is denied by
+# Azure's default rules, this single rule is your main attack-surface control
 resource "azurerm_network_security_group" "jumpbox" {
   name                = "jumpbox-nsg"
   location            = azurerm_resource_group.main.location
@@ -55,7 +54,7 @@ resource "azurerm_network_security_group" "jumpbox" {
   }
 }
 
-# The virtual network card that attaches the VM to the subnet + public IP.
+# The virtual network card that attaches the VM to the subnet + public IP
 resource "azurerm_network_interface" "jumpbox" {
   name                = "jumpbox-nic"
   location            = azurerm_resource_group.main.location
@@ -69,13 +68,13 @@ resource "azurerm_network_interface" "jumpbox" {
   }
 }
 
-# Bind the firewall rules to the NIC.
+# Binds the firewall rules to the NIC
 resource "azurerm_network_interface_security_group_association" "jumpbox" {
   network_interface_id      = azurerm_network_interface.jumpbox.id
   network_security_group_id = azurerm_network_security_group.jumpbox.id
 }
 
-# The VM itself. SSH-key auth only — no password login.
+# The VM itself, SSH-key auth only, no password login
 resource "azurerm_linux_virtual_machine" "jumpbox" {
   name                  = "cloudguard-jumpbox"
   resource_group_name   = azurerm_resource_group.main.name
@@ -94,8 +93,8 @@ resource "azurerm_linux_virtual_machine" "jumpbox" {
     storage_account_type = "Standard_LRS"
   }
 
-  # Ubuntu 22.04 LTS (Jammy). Bump to 24.04 by switching offer to
-  # "ubuntu-24_04-lts" / sku "server" once you've confirmed availability.
+  # Ubuntu 22.04 LTS (Jammy), bump to 24.04 by switching offer to
+  # "ubuntu-24_04-lts"/sku "server" once you've confirmed availability
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
@@ -104,6 +103,6 @@ resource "azurerm_linux_virtual_machine" "jumpbox" {
   }
 
   # Installs docker, kubectl, az CLI, and terraform on first boot so the
-  # box is a ready-to-use workstation. Reproducible = principal-SRE hygiene.
+  # box is a ready-to-use workstation, reproducible = principal-SRE hygiene
   custom_data = base64encode(file("${path.module}/cloud-init.yaml"))
 }
